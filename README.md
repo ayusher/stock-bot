@@ -33,6 +33,13 @@ Evaluate the model "YOLO" style (risking the entire portfolio on each trade) by 
 
 Evaluate the model with a minimum buy confidence of .5 by running `python3 eval.py model_2300 .5`, where the last argument can be changed to any buy confidence between 0 and 1.
 
+## Deployment
+
+To make trades on an Alpaca ccount using this bot, add your keys to keys.txt in the format "(API key) (secret key)". Example keys.txt: `aBcDeFgHiJkL AbCdEfGhIjKl`.
+
+Then, run `python3 trade.py model_2300` to see the trades that you expect the bot to make. To actually execute trades, include a final argument "trade" that acts as verification to prevent accidental trading. The complete command would be `python3 trade.py model_2300 trade`. 
+* See the first bullet point in the Notes section below for a warning about storing keys in plaintext. 
+
 ## Visualization
 
 Visualize the model's convolutional filters by running `python3 vis.py model_2300`. The resulting image will be stored in **vis.png**.
@@ -45,5 +52,4 @@ Visualize the output of the convolutional layer by runninng `python3 experiment.
 
 # Notes
 * To link the code to a paper Alpaca trading account, you must add your keys to a file named keys.txt in plaintext. For accounts with real money, remember that it is not ever a good idea to store important keys without encryption!
-  * Example keys.txt: `aBcDeFgHiJkL AbCdEfGhIjKl`
- * Once again, this bot is not intended to provide financial advice, please invest wisely.
+* Once again, this bot is not intended to provide financial advice, please invest wisely.
