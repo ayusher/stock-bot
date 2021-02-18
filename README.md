@@ -51,5 +51,5 @@ Visualize the output of the convolutional layer by running `python3 experiment.p
 <img src="https://github.com/ayusher/stock-bot/blob/main/conv_output.png" width="100%">
 
 # Notes
-* To link the code to a paper Alpaca trading account, you must add your keys to a file named keys.txt in plaintext. For accounts with real money, remember that it is not ever a good idea to store important keys without encryption!
+* To link the code to a paper Alpaca trading account, you must add your keys to a file named keys.txt in plaintext. For accounts with real money, remember that it is never a good idea to store important keys without encryption!
 * Once again, this bot is not intended to provide financial advice, please invest wisely.
