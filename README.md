@@ -46,7 +46,7 @@ Visualize the model's convolutional filters by running `python3 vis.py model_230
 
 <img src="https://github.com/ayusher/stock-bot/blob/main/vis.png" width="100%">
 
-Visualize the output of the convolutional layer by runninng `python3 experiment.py model_2300`. The resulting image will be stored in **conv_output.png**.
+Visualize the output of the convolutional layer by running `python3 experiment.py model_2300`. The resulting image will be stored in **conv_output.png**.
 
 <img src="https://github.com/ayusher/stock-bot/blob/main/conv_output.png" width="100%">
 
