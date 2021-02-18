@@ -10,9 +10,39 @@ This repo contains a DQN-based stock bot that uses 1D convolution and LSTMs for 
 - [x] Model convolutional filter visualization, see **vis.py** and **experiment.py**
 - [ ] Model trained on large and diverse testing and training datasets
 
+# Setup
+
+Run `pip3 install -r requirements.txt` to install all of the required dependencies.
+
 # Usage
-* In progress
+
+Models are stored in **models/** and data is stored in subfolders in **data/test/**.
+
+## Training
+
+Start training the model from scratch by running `python3 train.py data/test/XERS.csv`, where the argument can be replaced by the path to any CSV file to be used for validation.
+
+To resume training from a pretrained model, run `python3 train.py data/test/XERS.csv model_2300`, where the last argument is the name of the model as stored in the **models/** folder.
+
+## Evaluation
+
+Evaluate a model by running `python3 eval.py model_2300`. This will test the model against all stock data found in **data/test/**.
+
+Evaluate the model "YOLO" style (risking the entire portfolio on each trade) by running `python3 eval.py model_2300 -1`.
+
+Evaluate the model with a minimum buy confidence of .5 by running `python3 eval.py model_2300 .5`, where the last argument can be changed to any buy confidence between 0 and 1.
+
+## Visualization
+
+Visualize the model's convolutional filters by running `python3 vis.py model_2300`. The resulting image will be stored in **vis.png**.
+
+<img src="https://github.com/ayusher/stock-bot/blob/main/vis.png" width="100%">
+
+Visualize the output of the convolutional layer by runninng `python3 experiment.py model_2300`. The resulting image will be stored in **conv_output.png**.
+
+<img src="https://github.com/ayusher/stock-bot/blob/main/conv_output.png" width="100%">
 
 # Notes
 * To link the code to a paper Alpaca trading account, you must add your keys to a file named keys.txt in plaintext. For accounts with real money, remember that it is not ever a good idea to store important keys without encryption!
   * Example keys.txt: `aBcDeFgHiJkL AbCdEfGhIjKl`
+ * Once again, this bot is not intended to provide financial advice, please invest wisely.
