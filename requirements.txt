@@ -1,0 +1,11 @@
+alpaca_trade_api==0.53.0
+matplotlib==3.2.0
+numpy==1.13.3
+yfinance==0.1.55
+nltk==3.5
+tensorflow==2.4.1
+get_all_tickers==1.7
+coloredlogs==15.0
+requests==2.18.4
+pandas==1.1.5
+pygooglenews==0.1.2

@@ -1,0 +1,39 @@
+0) Setup
+
+Make sure python3 is installed and in the environment path.
+
+pip3 install -r requirements.txt
+
+
+1) Training
+
+Model training is done by calling train.py, which then runs train and eval_model_new from methods.py.
+
+Usage: python3 train.py [path to validation data] [optional: pretrained model name from models/ directory]
+
+Example 1: python3 train.py data/test/XERS.csv
+Example 2: python3 train.py data/test/XERS.csv model_500
+
+
+2) Evaluation
+
+Model evaluation is done by calling eval.py, which then runs eval_model_new from methods.py.
+
+Usage: python3 eval.py [pretrained model name from models/ directory] [optional: minimum confidence to buy stock, -1 to initiate YOLO purchases where 100% of portfolio is used in each purchase]
+
+Example 1: python3 eval.py model_500
+Example 2: python3 eval.py model_500 .5
+
+Note: there is also built-in stop loss capability, which can be accessed by changing the eval_model_new() call to include default argument SL = True. 
+
+
+3) Trading
+
+Using the model to trade is straightforward and can be done 2 ways. One way is by using input.py to search individual stocks and trade externally. The second way is by using trade.py to trade via alpaca.
+
+Usage: python3 trade.py [optional: "trade" calls alpaca API to place trades] 
+
+Example 1: python3 input.py
+Example 2: python3 trade.py
+Example 3: python3 trade.py trade
+
