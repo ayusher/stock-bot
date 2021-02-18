@@ -9,6 +9,7 @@ This repo contains a DQN-based stock bot that uses 1D convolution and LSTMs for 
 - [x] Model evaluation code that pulls from live Yahoo Finance data, see **trade.py** and **input.py**
 - [x] Model convolutional filter visualization, see **vis.py** and **experiment.py**
 - [ ] Model trained on large and diverse testing and training datasets
+- [ ] Google News sentiment analysis as a model input (initial results have been iffy)
 
 # Setup
 
