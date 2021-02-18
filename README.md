@@ -21,7 +21,7 @@ Models are stored in **models/** and data is stored in subfolders in **data/test
 
 ## Training
 
-Start training the model from scratch by running `python3 train.py data/test/XERS.csv`, where the argument can be replaced by the path to any CSV file to be used for validation.
+Start training the model from scratch by running `python3 train.py data/test/XERS.csv`, where the argument can be replaced by the path to any CSV file to be used for validation. This will train the model on all stock data found in **data/test/**.
 
 To resume training from a pretrained model, run `python3 train.py data/test/XERS.csv model_2300`, where the last argument is the name of the model as stored in the **models/** folder.
 
