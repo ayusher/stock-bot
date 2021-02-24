@@ -50,13 +50,15 @@ for t in range(len(tups[0])):
         #print(state)
         tup = (tups[0][t], tups[1][t])
         print("ticker: {} | {} | {}".format(names[t], d[tup[0]], tup[1]))
+        #print((names[t], tup[1]))
         if tup[0]==1:
             buys.append((names[t], tup[1]))
         elif tup[0]==2:
             sells.append((names[t], tup[1]))
 
 
-buys.sort(key=lambda q: q[1], reverse=True)[:5]
+buys.sort(key=lambda q: q[1], reverse=True)
+buys = buys[:5]
 
 if len(sys.argv)>2 and sys.argv[2]=="trade":
 
