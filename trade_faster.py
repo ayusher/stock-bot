@@ -18,7 +18,7 @@ getters = gt
 ts = get_tickers()
 #ts = gt.get_tickers_filtered(mktcap_min=1000)
 print(len(ts))
-ts = sorted(list(set(ts)), key=lambda x: len(x))
+ts = sorted(list(set(ts)), key=lambda x: len(x))[:250]
 d = {0: "HOLD", 1: "BUY", 2: "SELL"}
 tickers = [yf.Ticker(a) for a in ts]
 agent = Agent(30, model_name=sys.argv[1])
@@ -27,6 +27,7 @@ agent.first_iter = False
 
 buys = []
 sells = []
+states, names = [], []
 for t in range(len(tickers)):
     try:
         hist = tickers[t].history(period="3mo")
@@ -38,26 +39,32 @@ for t in range(len(tickers)):
             dc[key] = list(hist[key])[-30:]
         hist = get_stock_data("", d=dc)
         #print(hist)
-        state = get_state(hist, 30, 30)
+        if t%50==0: print("{}/{}".format(t, len(tickers)), end='\r')
+        states.append(get_state(hist, 30, 30))
+        names.append(ts[t])
         #print(state)
-        tup = agent.act(state, True)
-        #print(state)
-        print("ticker: {} | {} | {}".format(ts[t], d[tup[0]], tup[1]))
-        if tup[0]==1:
-            buys.append((ts[t], tup[1]))
-        elif tup[0]==2:
-            sells.append((ts[t], tup[1]))
-    except Exception as e:
-        if e is KeyboardInterrupt: exit()
-        print("ticker: {} | ERROR".format(ts[t]))
+    except: pass
 
-buys.sort(key=lambda q: q[1], reverse=True)
+tups = agent.act_bulk(states, True)
+for t in range(len(tups[0])):
+        #print(state)
+        tup = (tups[0][t], tups[1][t])
+        print("ticker: {} | {} | {}".format(names[t], d[tup[0]], tup[1]))
+        if tup[0]==1:
+            buys.append((names[t], tup[1]))
+        elif tup[0]==2:
+            sells.append((names[t], tup[1]))
+
+
+buys.sort(key=lambda q: q[1], reverse=True)[:5]
 
 if len(sys.argv)>2 and sys.argv[2]=="trade":
 
     with open("keys.txt", "r") as keys:
         ks = keys.read().split()
         api = tradeapi.REST(ks[0], ks[1], 'https://paper-api.alpaca.markets', api_version='v2')
+    clock = api.get_clock()
+    if not clock.is_open: exit()
     for item in sells:
         acc = api.get_account()
         try:
