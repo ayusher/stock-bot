@@ -48,7 +48,7 @@ for t in range(len(tickers)):
         names.append(ts[t])
         #print(state)
     except: pass
-
+#print(np.array(states).shape)
 tups = agent.act_bulk(states, True)
 for t in range(len(tups[0])):
         #print(state)
