@@ -15,10 +15,12 @@ buy_agg = .5
 sell_agg = .5
 getters = gt
 
-ts = get_tickers()
+ts, mktcap = get_tickers()
+#print(mktcap)
+tdict = dict(zip(ts, [float(x) if x!='' else 0 for x in mktcap]))
 #ts = gt.get_tickers_filtered(mktcap_min=1000)
 print(len(ts))
-ts = sorted(list(set(ts)), key=lambda x: len(x))
+ts = sorted(ts, key=lambda x: tdict[x], reverse=True)
 d = {0: "HOLD", 1: "BUY", 2: "SELL"}
 tickers = [yf.Ticker(a) for a in ts]
 agent = Agent(30, model_name=sys.argv[1])
@@ -29,6 +31,9 @@ buys = []
 sells = []
 for t in range(len(tickers)):
     try:
+        if "^" in ts[t]:
+            print("ticker: {} | NOT TRADEABLE".format(ts[t]))
+            continue
         hist = tickers[t].history(period="3mo")
         #tup = agent.act(hist, True)
         dc = {}

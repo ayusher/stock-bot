@@ -1,7 +1,7 @@
 import sys, os
 
 from agent import Agent
-from methods import train_model, evaluate_model, eval_model_new
+from methods import train_model, eval_model_new
 from utils import get_stock_data, get_dates_data
 import matplotlib.pyplot as plt
 

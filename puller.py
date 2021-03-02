@@ -24,5 +24,5 @@ def get_tickers():
 	r = requests.get('https://api.nasdaq.com/api/screener/stocks', headers=headers, params=params)
 	data = r.json()['data']
 	df = pd.DataFrame(data['rows'], columns=data['headers'])
-	return list(df["symbol"])
+	return list(df["symbol"]), list(df["marketCap"])
 
