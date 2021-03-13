@@ -11,8 +11,8 @@ def eval(window_size, name, safety, yolo):
     a = 0
     for file in l:
         ax = axes.flatten()[a]
-        data = get_stock_data("data/test/"+file)
-        dates = get_dates_data("data/test/"+file)
+        data = get_stock_data("data/test/"+file)[-253:]
+        dates = get_dates_data("data/test/"+file)[-253:]
         agent = Agent(window_size, model_name=name)
 
         print("evaluating on {} of length {}".format(file, len(data)))

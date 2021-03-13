@@ -9,8 +9,8 @@ import tensorflow.keras.backend as K
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model, clone_model
-from tensorflow.keras.layers import Dense, GaussianNoise, InputLayer, Dropout, Add, Input, LeakyReLU, GRU, SimpleRNN, Embedding, Flatten, Conv1D, Reshape, LSTM, Activation, MaxPooling1D, BatchNormalization
-from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.layers import Dense, GaussianNoise, InputLayer, Dropout, Add, Input, LeakyReLU, GRU, SimpleRNN, Embedding, Flatten, Conv1D, Reshape, LSTM, Activation, MaxPooling1D, BatchNormalization, AveragePooling1D
+from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from tensorflow.keras.losses import Huber
 #tf.get_logger().setLevel('WARNING')
 #"ops"
@@ -23,27 +23,28 @@ def softmax(x):
     """Compute softmax values for each sets of scores in x."""
     #print(x)
     e_x = np.exp(x - np.max(x))
-    return e_x / e_x.sum(axis=0) 
+    return e_x / e_x.sum(axis=0)
 
 class Agent:
 
-    def __init__(self, state_size, reset_every=2, model_name=None):
+    def __init__(self, state_size, reset_every=5, model_name=None):
         #physical_devices = tf.config.list_physical_devices('GPU')
         #tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
         self.state_size = state_size
         self.action_size = 3
         self.inventory = []
-        self.memory = deque(maxlen=20000)
+        self.memory = deque(maxlen=50000)
         self.first_iter = True
 
         self.gamma = 0.95
         self.epsilon = 1.0
-        self.epsilon_min = 0.1
+        self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.learning_rate = 0.001
+        self.learning_rate = 0.0001
         self.loss = "mse"
-        self.optimizer = Adam()
+
+        self.optimizer = RMSprop(learning_rate=self.learning_rate)
 
         if model_name==None:
             self.model = self.create_timeseries_model()
@@ -58,64 +59,28 @@ class Agent:
         self.target_model = clone_model(self.model)
         self.target_model.set_weights(self.model.get_weights())
 
-    def create_model(self):
-        model = Sequential([
-            InputLayer(input_shape=(self.state_size, )),
-
-            Dense(600),
-            LeakyReLU(alpha=.2),
-            Dense(900),
-            LeakyReLU(alpha=.2),
-            Dense(900),
-            LeakyReLU(alpha=.2),
-
-            Dense(self.action_size, activation="linear")
-        ])
-        model.compile(loss=self.loss, optimizer=self.optimizer)
-        return model
-
     def create_timeseries_model(self):
         model = Sequential([
             InputLayer(input_shape=(self.state_size, 5,)),
             Activation('tanh'),
             Reshape((self.state_size, 5)),
-            Conv1D(128, 3, activation="relu"),
-            MaxPooling1D(),
-            BatchNormalization(),
-            Dropout(.1),
-            #Conv1D(128, 3, activation="relu"),
-            #MaxPooling1D(),
-            #BatchNormalization(),
 
-            #Flatten(),
-            #Dense(256, activation="relu"),
-            LSTM(128, return_sequences=True),
-            LSTM(128),
-            Dropout(.2),
-            #Dense(256),
-            #LeakyReLU(alpha = .2),
-            #Conv1D(64, 5),
-            #LeakyReLU(alpha = .2),
-            #Flatten(),
+            Conv1D(128, 5),
+            LeakyReLU(alpha=0.2),
+
+            Conv1D(128, 3),
+            LeakyReLU(alpha=0.2),
+
+            MaxPooling1D(),
+
+            Flatten(),
+            Dense(2048, activation="tanh"),
             Dense(self.action_size, activation="linear")
         ])
+
+
         model.compile(loss=self.loss, optimizer=self.optimizer)
         model.summary()
-        return model
-
-    def create_model_volume(self):
-        input1 = Input(shape=(self.state_size,))
-        input2 = Input(shape=(self.state_size,))
-        d1 = Dense(self.state_size, activation="relu")(input1)
-        d2 = Dense(self.state_size, activation="relu")(input2)
-        added = Add()([d1, d2])
-        d3 = Dense(512, activation="relu")(added)
-        drop = Dropout(512, activation="relu")(d3)
-        d4 = Dense(512, activation="relu")(drop)
-        out = Dense(self.action_size, activation="softmax")(d4)
-        model = tf.keras.models.Model(inputs=[input1, input2], outputs=out)
-        model.compile(loss=self.loss, optimizer=self.optimizer)
-
         return model
 
     def remember(self, state, action, reward, next_state, done):
@@ -147,11 +112,11 @@ class Agent:
             return [i if random.random()>self.epsilon else random.randrange(self.action_size) for i in outs]
 
     def train_experience_replay(self, batch_size):
-        if random.random()<.9:
+        if random.random()<.5:
             mini_batch = random.sample(self.memory, batch_size)
         else:
             print("VOLATILE")
-            mini_batch = sorted(self.memory, key= lambda x: np.std([i[-2] for i in x[0]]), reverse=True)[:batch_size]
+            mini_batch = random.sample(self.memory, batch_size//2) + sorted(self.memory, key= lambda x: x[2], reverse=True)[:batch_size//4] + sorted(self.memory, key= lambda x: -x[2], reverse=True)[:batch_size//4]
         X_train, y_train = [], []
 
         self.n_iter += 1
@@ -178,17 +143,18 @@ class Agent:
             y_train.append(q_values[ind])
             ind+=1
 
-
+        print(self.epsilon)
         #print("END REPLAY")
         #print(y_train)
         print(np.array(X_train).shape)
         #for i in y_train:
         #    if any([math.isnan(h) for h in i]): exit()
-        loss = self.model.fit(
-            np.array(X_train), np.array(y_train),
-            epochs=1, batch_size=32
-        ).history["loss"][0]
-
+        loss = -1
+        while loss==-1 or loss>1:
+            loss = self.model.fit(
+                np.array(X_train), np.array(y_train),
+                epochs=1
+            ).history["loss"][0]
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay

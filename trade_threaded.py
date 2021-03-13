@@ -82,6 +82,7 @@ for t in range(len(tups[0])):
 
 buys.sort(key=lambda q: q[1], reverse=True)
 buys = buys[:5]
+sumbuys = sum([i[1] for i in buys])
 print(buys)
 if len(sys.argv)>2 and sys.argv[2]=="trade":
 	with open("keys.txt", "r") as keys:
@@ -89,33 +90,39 @@ if len(sys.argv)>2 and sys.argv[2]=="trade":
 		api = tradeapi.REST(ks[0], ks[1], 'https://paper-api.alpaca.markets', api_version='v2')
 	clock = api.get_clock()
 	if not clock.is_open: exit()
-	poss = [position.symbol for position in api.list_positions()]
+	poss = [position.symbol.upper() for position in api.list_positions()]
 	for item in sells:
-		if item[0] not in poss: continue
+		if item[0].upper() not in poss: continue
 		#acc = api.get_account()
 		pos = api.get_position(item[0])
 		acc = api.get_account()
 		if int(pos.qty)>0:
 			api.submit_order(
 			symbol=item[0],
-			qty=min(int(sell_agg*float(acc.equity)*item[1]//tickers[ts.index(item[0])].info["bid"]), int(pos.qty)),
+			qty=pos.qty,
 			side='sell',
 			type='market',
-			time_in_force='gtc'
+			time_in_force='day'
 			)
 
 	time.sleep(5)
 
+	acc = api.get_account()
+	obuy = acc.buying_power
 	for item in buys:
 		acc = api.get_account()
+		#print(acc.buying_power)
+		#print(item[1]/sumbuys)
+		#print((tickers[ts.index(item[0])].info["ask"]))
+		#print((float(item[1]/sumbuys)*float(acc.buying_power))/(tickers[ts.index(item[0])].info["ask"]))
 		try:
-			if int(buy_agg*float(acc.buying_power)*item[1]//tickers[ts.index(item[0])].info["ask"])>0:
+			if (float(item[1]/sumbuys)*float(obuy))/(tickers[ts.index(item[0])].info["ask"])>0:
 				api.submit_order(
 				  symbol=item[0],
-				  qty=int(buy_agg*float(acc.buying_power)*item[1]//tickers[ts.index(item[0])].info["ask"]),
+				  qty=int((float(item[1]/sumbuys)*float(obuy))/(tickers[ts.index(item[0])].info["ask"])),
 				  side='buy',
 				  type='market',
-				  time_in_force='gtc'
+				  time_in_force='day'
 				)
 		except: pass
 

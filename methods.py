@@ -18,6 +18,7 @@ def train_model(agent, episode, data, ep_count, batch_size, window_size, states)
     print(len(data))
     start = time.time()
     actions = agent.act_bulk(states)
+    counter = 0
     for t in range(data_length):
         reward = 0
         next_state = states[t+1]
@@ -33,9 +34,11 @@ def train_model(agent, episode, data, ep_count, batch_size, window_size, states)
             delta = (prices[t] - bought_price)/bought_price
             #delta2 = (prices[t] - rew)/rew
             #reward = delta**3 TODO: change this where applicable
-            if delta<0: reward = -1/(1+delta)+1
-            else: reward = delta
+            if delta<0: reward = 2*math.tan(delta)
+            else: reward = math.tanh(delta/2)
+            #if abs(reward)>1: print(reward, delta)
             total_profit += delta
+            counter += 1
         # HOLD
         else:
             pass
@@ -45,6 +48,10 @@ def train_model(agent, episode, data, ep_count, batch_size, window_size, states)
 
         state = next_state
     print("time taken replaying {}".format(time.time()-start))
+    if counter==0: print("made no trades")
+    else: print("average realized profit {:.2f}% on {} trades".format(total_profit/counter*100, counter))
+    #print("total average profit {:.2f}%".format((total_profit+len(agent.inventory)*(prices[-1]-sum(agent.inventory)/len(agent.inventory))/(sum(agent.inventory)/len(agent.inventory)) ))
+    if counter>0 and len(agent.inventory)>0: print("total average profit {:.2f}%".format( 100*(total_profit+len(agent.inventory)*(prices[-1]-sum(agent.inventory)/len(agent.inventory))/(sum(agent.inventory)/len(agent.inventory)))/(counter+len(agent.inventory)) ))
     if len(agent.memory) > batch_size:
         loss = agent.train_experience_replay(batch_size)
         avg_loss.append(loss)

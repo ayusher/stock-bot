@@ -28,7 +28,7 @@ def get_state(data, t, n_days):
     for i in range(n_days-1):
         #print([10*(block[i+1][x] - block[i][x])/block[i][x] for x in range(len(block[0]))])
         #time.sleep(1)
-        res.append([10*(block[i+1][x] - block[i][x])/block[0][x] for x in range(len(block[0]))])
+        res.append([10*(block[i+1][x] - block[i][x])/block[i][x] for x in range(len(block[0]))])
     #print(res)
 
     return np.array([res])

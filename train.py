@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, random
 
 from agent import Agent
 from methods import train_model, eval_model_new
@@ -11,6 +11,7 @@ def train(val_stock, window_size, batch_size, ep_count, name):
 	val_data = get_stock_data(val_stock)
 	epic = 1
 	for _ in range(50):
+		random.shuffle(files)
 		for filename in files:
 			print("training on {}".format(filename))
 			train_data = get_stock_data("data/train/"+filename)

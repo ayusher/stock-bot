@@ -9,9 +9,12 @@ filter = model.layers[2].get_weights()[0]
 print(filter.shape)
 fig, axes = plt.subplots(16, 8)
 
+f_min, f_max = filter.min(), filter.max()
+filter = (filter - f_min) / (f_max - f_min)
+
 for a in range(128):
 	ax = axes.flatten()[a]
-	ax.imshow(filter[:,:,a])
+	ax.imshow(filter[:,:,a], cmap="gray")
 	ax.set_xticks([])
 	ax.set_yticks([])
 	ax.axis('off')
