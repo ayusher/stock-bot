@@ -23,26 +23,26 @@ Models are stored in **models/** and data is stored in subfolders in **data/test
 
 Start training the model from scratch by running `python3 train.py data/test/XERS.csv`, where the argument can be replaced by the path to any CSV file to be used for validation. This will train the model on all stock data found in **data/test/**.
 
-To resume training from a pretrained model, run `python3 train.py data/test/XERS.csv model_2300`, where the last argument is the name of the model as stored in the **models/** folder.
+To resume training from a pretrained model, run `python3 train.py data/test/XERS.csv model_5750`, where the last argument is the name of the model as stored in the **models/** folder.
 
 ## Evaluation
 
-Evaluate a model by running `python3 eval.py model_2300`. This will test the model against all stock data found in **data/test/**.
+Evaluate a model by running `python3 eval.py model_5750`. This will test the model against all stock data found in **data/test/**.
 
-Evaluate the model "YOLO" style (risking the entire portfolio on each trade) by running `python3 eval.py model_2300 -1`.
+Evaluate the model "YOLO" style (risking the entire portfolio on each trade) by running `python3 eval.py model_5750 -1`.
 
-Evaluate the model with a minimum buy confidence of .5 by running `python3 eval.py model_2300 .5`, where the last argument can be changed to any buy confidence between 0 and 1.
+Evaluate the model with a minimum buy confidence of .5 by running `python3 eval.py model_5750 .5`, where the last argument can be changed to any buy confidence between 0 and 1.
 
 ## Deployment
 
 To make trades on an Alpaca ccount using this bot, add your keys to keys.txt in the format "(API key) (secret key)". Example keys.txt: `aBcDeFgHiJkL AbCdEfGhIjKl`.
 
-Then, run `python3 trade.py model_2300` to see the trades that you expect the bot to make. To actually execute trades, include a final argument "trade" that acts as verification to prevent accidental trading. The complete command would be `python3 trade.py model_2300 trade`. 
+Then, run `python3 trade.py model_5750` to see the trades that you expect the bot to make. To actually execute trades, include a final argument "trade" that acts as verification to prevent accidental trading. The complete command would be `python3 trade.py model_5750 trade`. 
 * See the first bullet point in the Notes section below for a warning about storing keys in plaintext. 
 
 ## Visualization
 
-Visualize the model's convolutional filters by running `python3 vis.py model_2300`. The resulting image will be stored in **vis.png**.
+Visualize the model's convolutional filters by running `python3 vis.py model_5750`. The resulting image will be stored in **vis.png**.
 
 <img src="https://github.com/ayusher/stock-bot/blob/main/vis.png" width="100%">
 
