@@ -20,7 +20,7 @@ ts, mktcap = get_tickers()
 tdict = dict(zip(ts, [float(x) if x!='' else 0 for x in mktcap]))
 #ts = gt.get_tickers_filtered(mktcap_min=1000)
 print(len(ts))
-ts = sorted(ts, key=lambda x: tdict[x], reverse=True)
+ts = sorted(ts, key=lambda x: tdict[x], reverse=True)[:500]
 d = {0: "HOLD", 1: "BUY", 2: "SELL"}
 tickers = [yf.Ticker(a) for a in ts]
 agent = Agent(30, model_name=sys.argv[1])
@@ -57,6 +57,7 @@ for t in range(len(tickers)):
         print("ticker: {} | ERROR".format(ts[t]))
 
 buys.sort(key=lambda q: q[1], reverse=True)
+print(buys)
 
 if len(sys.argv)>2 and sys.argv[2]=="trade":
 

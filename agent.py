@@ -27,24 +27,24 @@ def softmax(x):
 
 class Agent:
 
-    def __init__(self, state_size, reset_every=5, model_name=None):
+    def __init__(self, state_size, reset_every=10, model_name=None):
         #physical_devices = tf.config.list_physical_devices('GPU')
         #tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
         self.state_size = state_size
         self.action_size = 3
         self.inventory = []
-        self.memory = deque(maxlen=50000)
+        self.memory = deque(maxlen=1000000)
         self.first_iter = True
 
         self.gamma = 0.95
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
-        self.learning_rate = 0.0001
+        self.epsilon_decay = 0.99
+        self.learning_rate = 1e-4
         self.loss = "mse"
 
-        self.optimizer = RMSprop(learning_rate=self.learning_rate)
+        self.optimizer = Adam(learning_rate=self.learning_rate)
 
         if model_name==None:
             self.model = self.create_timeseries_model()
@@ -62,19 +62,16 @@ class Agent:
     def create_timeseries_model(self):
         model = Sequential([
             InputLayer(input_shape=(self.state_size, 5,)),
-            Activation('tanh'),
-            Reshape((self.state_size, 5)),
+            #Activation('tanh'),
 
-            Conv1D(128, 5),
+            Conv1D(128, 3, padding="same"),
             LeakyReLU(alpha=0.2),
 
-            Conv1D(128, 3),
+            Conv1D(128, 3, padding="same"),
             LeakyReLU(alpha=0.2),
-
-            MaxPooling1D(),
 
             Flatten(),
-            Dense(2048, activation="tanh"),
+            Dense(1024, activation="tanh"),
             Dense(self.action_size, activation="linear")
         ])
 
@@ -97,7 +94,7 @@ class Agent:
             #return 1
 
         #with tf.device('/cpu:0'):
-        action_probs = self.model.predict(state)
+        action_probs = self.model(state, training=False).numpy()
         if is_eval:
             return np.argmax(action_probs[0]), max(softmax(action_probs[0]))
         return np.argmax(action_probs[0])
@@ -112,11 +109,23 @@ class Agent:
             return [i if random.random()>self.epsilon else random.randrange(self.action_size) for i in outs]
 
     def train_experience_replay(self, batch_size):
-        if random.random()<.5:
-            mini_batch = random.sample(self.memory, batch_size)
+        print("memory size", len(self.memory))
+        if random.random()<.1:
+            print("error-based")
+            #mini_batch = random.sample(self.memory, batch_size)
+            #dst = lambda x, y: return sum([(x[i]-y[i])**2 for i in range(len(x))])**.5
+            pred = self.model(np.array([i[0][0] for i in self.memory]), training=False).numpy()
+            acs = [np.argmax(x) for x in pred]
+            acts = [i[1] for i in self.memory]
+            #print(acs)
+            mini = [self.memory[j] for j in range(len(self.memory)) if acts[j]!=acs[j]]
+            if len(mini)>=batch_size: mini_batch = random.sample(mini, batch_size)
+            else: mini_batch = mini+random.sample(self.memory, batch_size-len(mini))
+            #mini_batch = random.choices(self.memory, batch_size, weights)
         else:
-            print("VOLATILE")
-            mini_batch = random.sample(self.memory, batch_size//2) + sorted(self.memory, key= lambda x: x[2], reverse=True)[:batch_size//4] + sorted(self.memory, key= lambda x: -x[2], reverse=True)[:batch_size//4]
+            print("random")
+            mini_batch = random.sample(self.memory, batch_size)
+            #print(max([i[2] for i in mini_batch], key=lambda x: abs(x)))
         X_train, y_train = [], []
 
         self.n_iter += 1
@@ -126,8 +135,8 @@ class Agent:
             self.n_iter = 0
             self.target_model.set_weights(self.model.get_weights())
 
-        q_values = self.model.predict(np.array([g[0][0] for g in mini_batch]))
-        targs = self.target_model.predict(np.array([g[3][0] for g in mini_batch]))
+        q_values = self.model(np.array([g[0][0] for g in mini_batch]), training=False).numpy()
+        targs = self.target_model(np.array([g[3][0] for g in mini_batch]), training=False).numpy()
         #print(len(q_values))
         ind = 0
         for state, action, reward, next_state, done in mini_batch:
@@ -149,12 +158,12 @@ class Agent:
         print(np.array(X_train).shape)
         #for i in y_train:
         #    if any([math.isnan(h) for h in i]): exit()
-        loss = -1
-        while loss==-1 or loss>1:
-            loss = self.model.fit(
-                np.array(X_train), np.array(y_train),
-                epochs=1
-            ).history["loss"][0]
+        #loss = -1
+        #while loss==-1 or loss>1:
+        loss = self.model.fit(
+            np.array(X_train), np.array(y_train),
+            epochs=1
+        ).history["loss"][0]
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay

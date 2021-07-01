@@ -30,7 +30,7 @@ if __name__ == "__main__":
     except:
       name = None
     window_size = 30
-    batch_size = 2048
+    batch_size = 4096
     ep_count = 5
 
     try:
