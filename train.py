@@ -10,7 +10,7 @@ def train(val_stock, window_size, batch_size, ep_count, name):
 	agent = Agent(window_size, model_name=name)
 	val_data = get_stock_data(val_stock)
 	epic = 1
-	for _ in range(50):
+	for _ in range(300):
 		random.shuffle(files)
 		for filename in files:
 			print("training on {}".format(filename))
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     except:
       name = None
     window_size = 30
-    batch_size = 4096
-    ep_count = 5
+    batch_size = 4096*8
+    ep_count = 1
 
     try:
         train(val_stock, window_size, batch_size, ep_count, name)

@@ -27,14 +27,14 @@ def softmax(x):
 
 class Agent:
 
-    def __init__(self, state_size, reset_every=10, model_name=None):
+    def __init__(self, state_size, reset_every=100, model_name=None):
         #physical_devices = tf.config.list_physical_devices('GPU')
         #tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
         self.state_size = state_size
         self.action_size = 3
         self.inventory = []
-        self.memory = deque(maxlen=1000000)
+        self.memory = deque(maxlen=int(5e6))
         self.first_iter = True
 
         self.gamma = 0.95
@@ -42,7 +42,7 @@ class Agent:
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.99
         self.learning_rate = 1e-4
-        self.loss = "mse"
+        self.loss = tf.keras.losses.Huber() #mse
 
         self.optimizer = Adam(learning_rate=self.learning_rate)
 
@@ -62,12 +62,11 @@ class Agent:
     def create_timeseries_model(self):
         model = Sequential([
             InputLayer(input_shape=(self.state_size, 5,)),
-            #Activation('tanh'),
 
-            Conv1D(128, 3, padding="same"),
+            Conv1D(256, 3, padding="same"),
             LeakyReLU(alpha=0.2),
 
-            Conv1D(128, 3, padding="same"),
+            Conv1D(256, 3, padding="same"),
             LeakyReLU(alpha=0.2),
 
             Flatten(),
@@ -100,7 +99,7 @@ class Agent:
         return np.argmax(action_probs[0])
 
     def act_bulk(self, states, is_eval=False):
-        action_probs = self.model.predict(np.reshape(np.array(states), (-1, 30, 5)))
+        action_probs = self.model(np.reshape(np.array(states), (-1, 30, 5)), training=False).numpy()
         if is_eval:
             return np.argmax(action_probs, axis=1), [max(softmax(action_probs[x])) for x in range(len(action_probs))]
         else:
@@ -110,8 +109,9 @@ class Agent:
 
     def train_experience_replay(self, batch_size):
         print("memory size", len(self.memory))
-        if random.random()<.1:
-            print("error-based")
+        print("avg reward", sum([i[2] for i in self.memory])/len(self.memory))
+        if random.random()<0: #never
+            #print("error-based")
             #mini_batch = random.sample(self.memory, batch_size)
             #dst = lambda x, y: return sum([(x[i]-y[i])**2 for i in range(len(x))])**.5
             pred = self.model(np.array([i[0][0] for i in self.memory]), training=False).numpy()
@@ -123,7 +123,7 @@ class Agent:
             else: mini_batch = mini+random.sample(self.memory, batch_size-len(mini))
             #mini_batch = random.choices(self.memory, batch_size, weights)
         else:
-            print("random")
+            #print("random")
             mini_batch = random.sample(self.memory, batch_size)
             #print(max([i[2] for i in mini_batch], key=lambda x: abs(x)))
         X_train, y_train = [], []
@@ -164,7 +164,7 @@ class Agent:
             np.array(X_train), np.array(y_train),
             epochs=1
         ).history["loss"][0]
-
+        print()
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 

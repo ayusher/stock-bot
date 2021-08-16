@@ -43,8 +43,9 @@ for t in range(len(tickers)):
     state = get_state(hist, 30, 30)
     #print(state)
     tup = agent.act(state, True)
-    mod = tf.keras.models.Model(inputs = agent.model.inputs, outputs=agent.model.layers[2].output)
+    mod = tf.keras.models.Model(inputs = agent.model.inputs, outputs=agent.model.inputs) #, outputs=agent.model.layers[2].output)
     o = mod.predict(state)[0]
+    print(o.shape)
     #o_min, o_max = o.min(), o.max()
     #plt.imshow((o - o_min)/(o_max-o_min), cmap='gray')
     plt.imshow(o)
